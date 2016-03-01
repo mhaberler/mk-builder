@@ -3,17 +3,23 @@ MAINTAINER GP Orcullo <kinsamanka@gmail.com>
 #
 # These variables configure the build.
 #
-ENV SUITE [suite]
-ENV ARCH  [arch]
+ENV SUITE raspbian
+ENV ARCH  armhf
 #
 # [Leave surrounding comments to eliminate merge conflicts]
 #
 
 ENV PROOT_OPTS "-b /dev/urandom"
 
+# add raspbian keyring
+ADD https://archive.raspbian.org/raspbian.public.key /raspbian-archive
 # create chroot
 ADD wheezy.conf jessie.conf raspbian.conf /
-RUN multistrap -f /${SUITE}.conf -a ${ARCH} -d ${ROOTFS} && \
+RUN mkdir -p ${ROOTFS}/etc/apt/trusted.gpg.d && \
+    mv /raspbian-archive ${ROOTFS}/etc/apt/trusted.gpg.d/ && \
+    gpg --dearmor ${ROOTFS}/etc/apt/trusted.gpg.d/raspbian-archive && \
+    rm ${ROOTFS}/etc/apt/trusted.gpg.d/raspbian-archive && \
+    multistrap -f /${SUITE}.conf -a ${ARCH} -d ${ROOTFS} && \
     proot-helper /var/lib/dpkg/info/dash.preinst install && \
     proot-helper dpkg --configure -a
 
