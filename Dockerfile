@@ -31,14 +31,16 @@ ADD mk_depends ${ROOTFS}/tmp/
 # copy arm-linux-gnueabihf-* last to clobber package installs
 ADD bin/* ${ROOTFS}/tmp/
 
+# add raspbian cross-compiler
+ADD https://github.com/raspberrypi/tools/archive/master.tar.gz /tmp/
+
 # fix resolv.conf
 # 3rd-party MK deps repo
 # install MK dependencies
 # cython package is in backports on Wheezy
 # tcl/tk latest is v. 8.5 in Wheezy
 # cleanup apt
-# use modified arm-linux-gnueabihf-* if running on wheezy
-# else use native arm-linux-gnueabihf-* 
+# use modified arm-linux-gnueabihf-*
 # cleanup
 # update ccache symlinks
 
@@ -59,15 +61,15 @@ RUN echo "nameserver 8.8.8.8\nnameserver 8.8.4.4" \
         || proot-helper apt-get install -y tcl8.6-dev tk8.6-dev) && \
     proot-helper apt-get clean && \
     (rm -f /var/lib/apt/lists/* ${ROOTFS}/var/lib/apt/lists/* || true) && \
-    (test $ARCH = armhf && test $SUITE = wheezy \
-        && cp ${ROOTFS}/tmp/arm-* ${ROOTFS}/usr/bin/ \
-        || true) && \
-    (test $ARCH = armhf && test $SUITE != wheezy \
-        && proot-helper sh -c '\
-            for a in $(ls /host-rootfs/usr/bin/arm-linux-gnueabihf-*); \
-            do \
-                ln -sf $a /usr/bin; \
-            done' \
-        || true) && \
-    rm ${ROOTFS}/tmp/* wheezy.conf jessie.conf raspbian.conf && \
+    (cd /tmp/; tar xf master.tar.gz;) && \
+    cp -a /tmp/tools-master/arm-bcm2708/arm-rpi-4.9*/* /usr/local/ && \
+    proot-helper sh -c '\
+        for a in $(ls /host-rootfs/usr/local/bin/arm-linux-gnueabihf-*); \
+        do \
+            ln -sf $a /usr/bin; \
+        done' && \
+    rm ${ROOTFS}/usr/bin/arm-linux-gnueabihf-gcc && \
+    rm ${ROOTFS}/usr/bin/arm-linux-gnueabihf-g++ && \
+    cp -f ${ROOTFS}/tmp/arm-* ${ROOTFS}/usr/bin/ && \
+    rm -rf /tmp/* ${ROOTFS}/tmp/* wheezy.conf jessie.conf raspbian.conf && \
     proot-helper dpkg-reconfigure ccache
