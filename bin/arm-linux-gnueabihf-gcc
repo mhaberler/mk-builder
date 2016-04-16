@@ -1,6 +1,7 @@
 #!/bin/sh
 exec /host-rootfs/usr/local/bin/arm-linux-gnueabihf-gcc \
 	-march=armv6j -mtune=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard \
+	-D__ARM_ARCH_6__=1 \
 	-I/usr/include \
 	-I/usr/include/arm-linux-gnueabihf \
 	-Wl,-rpath-link=/usr/lib/gcc/arm-linux-gnueabihf/4.9 \
