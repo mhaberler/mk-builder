@@ -27,12 +27,14 @@ RUN echo 'APT::Install-Recommends "0";\nAPT::Install-Suggests "0";' > \
         /etc/apt/sources.list.d/emdebian.list && \
     dpkg --add-architecture armhf && \
     apt-get update && \
-    apt-get -y install \
+    apt-get -y \
+    	install \
         bzip2 \
-        crossbuild-essential-armhf \
-        multistrap \
-        git \
-        proot \
-        qemu-user-static \
         ca-certificates \
+        crossbuild-essential-armhf \
+        git \
+        multistrap \
+	pandoc \
+	proot \
+        qemu-user-static \
         wget
